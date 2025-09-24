@@ -242,26 +242,35 @@ def get_regulations(program):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/stats', methods=['GET'])
-def get_stats():
-    """Get database statistics"""
+@app.route('/api/debug', methods=['GET'])
+def debug_info():
+    """Debug endpoint to check environment variables and project status"""
     try:
         if not SUPABASE_AVAILABLE:
             return jsonify({'error': 'Supabase not available'}), 500
             
-        supabase = get_supabase_client()
+        debug_info = {
+            'environment_variables': {
+                'SUPABASE_PRIMARY_URL': os.getenv('SUPABASE_PRIMARY_URL', 'NOT_SET'),
+                'SUPABASE_PRIMARY_KEY': os.getenv('SUPABASE_PRIMARY_KEY', 'NOT_SET')[:20] + '...' if os.getenv('SUPABASE_PRIMARY_KEY') else 'NOT_SET',
+                'SUPABASE_SECONDARY_URL': os.getenv('SUPABASE_SECONDARY_URL', 'NOT_SET'),
+                'SUPABASE_SECONDARY_KEY': os.getenv('SUPABASE_SECONDARY_KEY', 'NOT_SET')[:20] + '...' if os.getenv('SUPABASE_SECONDARY_KEY') else 'NOT_SET',
+            },
+            'loaded_projects': list(supabase_manager.projects.keys()),
+            'current_project': supabase_manager.current_project,
+            'search_order': supabase_manager.search_order
+        }
         
-        # Get counts from different tables
-        programs_count = supabase.table('programs').select('*', count='exact').execute()
-        institutes_count = supabase.table('institutes').select('*', count='exact').execute()
-        students_count = supabase.table('students').select('*', count='exact').execute()
+        # Test if we can actually connect to Supabase
+        try:
+            supabase = get_supabase_client()
+            test_result = supabase.table('programs').select('*').limit(1).execute()
+            debug_info['supabase_connection'] = 'SUCCESS'
+            debug_info['test_query_result'] = len(test_result.data) if test_result.data else 0
+        except Exception as e:
+            debug_info['supabase_connection'] = f'FAILED: {str(e)}'
         
-        return jsonify({
-            'programs': programs_count.count,
-            'institutes': institutes_count.count,
-            'students': students_count.count,
-            'current_project': supabase_manager.current_project
-        })
+        return jsonify(debug_info)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
