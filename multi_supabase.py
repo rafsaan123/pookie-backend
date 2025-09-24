@@ -197,6 +197,13 @@ class MultiSupabaseManager:
         else:
             print(f"❌ Project {name} not found")
     
+    def switch_project(self, project_name: str):
+        """Switch to a different project"""
+        if project_name not in self.projects:
+            raise Exception(f"Project {project_name} not found")
+        self.current_project = project_name
+        print(f"🔄 Switched to project: {project_name}")
+    
     def get_current_client(self):
         """Get client for current project"""
         if not self.current_project or self.current_project not in self.projects:
