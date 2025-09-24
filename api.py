@@ -206,6 +206,35 @@ def search_result():
             if cgpa_data:
                 result['cgpaData'] = cgpa_data
             
+            # Check if Supabase data is complete - if missing early semesters, try web API fallback
+            if result and not result.get('source', '').startswith('web_api'):
+                # Check if we have semester 1 data
+                gpa_records = []
+                try:
+                    found_project = result.get('project_name', 'primary')
+                    supabase_manager.switch_project(found_project)
+                    supabase = get_supabase_client()
+                    
+                    gpa_result = supabase.table('gpa_records').select('*').eq('roll_number', roll_no).order('semester').execute()
+                    gpa_records = gpa_result.data if gpa_result.data else []
+                    
+                    # Check if semester 1 is missing
+                    semesters = [record.get('semester') for record in gpa_records]
+                    if 1 not in semesters and len(semesters) > 0:
+                        print(f"⚠️ Missing semester 1 in Supabase data. Semesters found: {semesters}")
+                        print(f"🌐 Trying web API fallback for complete data...")
+                        
+                        # Try web API fallback
+                        web_result = search_student_in_web_apis(roll_no, regulation, program)
+                        if web_result and web_result.get('success'):
+                            print(f"✅ Found complete data in web API fallback")
+                            result = web_result
+                        else:
+                            print(f"❌ Web API fallback failed, using incomplete Supabase data")
+                    
+                except Exception as e:
+                    print(f"❌ Error checking data completeness: {e}")
+            
             # Get GPA records - check if they come from web API fallback or need to fetch from Supabase
             gpa_records = []
             if result.get('source', '').startswith('web_api'):
