@@ -173,7 +173,9 @@ def search_result():
         # Search across Supabase projects
         result = supabase_manager.search_student_across_projects(roll_no, regulation, program)
         
-        if result and result.get('success'):
+        print(f"🔍 Search result: {result}")
+        
+        if result and result.get('student_data'): # Check for 'student_data' to confirm a student was found
             # Get CGPA data if available
             cgpa_data = []
             if result.get('source') == 'supabase':
