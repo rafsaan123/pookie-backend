@@ -206,13 +206,17 @@ def search_result():
             if cgpa_data:
                 result['cgpaData'] = cgpa_data
             
-            # Get GPA records from Supabase (separate query)
+            # Get GPA records from Supabase (separate query) - use the same project where student was found
             gpa_records = []
             try:
+                # Switch to the project where the student was found
+                found_project = result.get('found_in_project', 'primary')
+                supabase_manager.switch_project(found_project)
                 supabase = get_supabase_client()
+                
                 gpa_result = supabase.table('gpa_records').select('*').eq('roll_number', roll_no).order('semester').execute()
                 gpa_records = gpa_result.data if gpa_result.data else []
-                print(f"📊 Found {len(gpa_records)} GPA records")
+                print(f"📊 Found {len(gpa_records)} GPA records in {found_project}")
             except Exception as e:
                 print(f"❌ Error fetching GPA records: {e}")
                 gpa_records = []
@@ -235,12 +239,27 @@ def search_result():
             # Add semester results from GPA records
             if gpa_records:
                 for gpa_record in gpa_records:
+                    # Handle ref_subjects - convert to array if it's a string or None
+                    ref_subjects = gpa_record.get('ref_subjects', [])
+                    if isinstance(ref_subjects, str):
+                        # If it's a string, try to parse it as JSON or split by comma
+                        try:
+                            import json
+                            ref_subjects = json.loads(ref_subjects)
+                        except:
+                            ref_subjects = [ref_subjects] if ref_subjects else []
+                    elif ref_subjects is None:
+                        ref_subjects = []
+                    
                     semester_result = {
                         'publishedAt': gpa_record.get('created_at', '2025-01-01T00:00:00Z'),
                         'semester': str(gpa_record.get('semester', 1)),
-                        'result': gpa_record.get('gpa', '0.00'),
+                        'result': {
+                            'gpa': str(gpa_record.get('gpa', '0.00')) if gpa_record.get('gpa') is not None else 'ref',
+                            'ref_subjects': ref_subjects
+                        },
                         'passed': not gpa_record.get('is_reference', False),
-                        'gpa': str(gpa_record.get('gpa', '0.00'))
+                        'gpa': str(gpa_record.get('gpa', '0.00')) if gpa_record.get('gpa') is not None else 'ref'
                     }
                     transformed_data['resultData'].append(semester_result)
             
