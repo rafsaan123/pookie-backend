@@ -200,7 +200,7 @@ def search_result():
                         continue
                 
                 # Restore original project
-                supabase_manager.switch_project(result.get('found_in_project', 'primary'))
+                supabase_manager.switch_project(result.get('project_name', 'primary'))
             
             # Add CGPA data to result
             if cgpa_data:
@@ -210,7 +210,7 @@ def search_result():
             gpa_records = []
             try:
                 # Switch to the project where the student was found
-                found_project = result.get('found_in_project', 'primary')
+                found_project = result.get('project_name', 'primary')
                 supabase_manager.switch_project(found_project)
                 supabase = get_supabase_client()
                 
