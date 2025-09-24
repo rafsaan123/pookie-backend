@@ -206,11 +206,34 @@ def search_result():
             if cgpa_data:
                 result['cgpaData'] = cgpa_data
             
-            # Return consistent format with success field
-            return jsonify({
+            # Transform the data to match mobile app expectations
+            transformed_data = {
                 'success': True,
-                'data': result
-            })
+                'roll': result['student_data']['roll_number'],
+                'regulation': result['student_data']['regulation_year'],
+                'exam': result['student_data']['program_name'],
+                'instituteData': {
+                    'code': result['institute_data']['institute_code'],
+                    'name': result['institute_data']['name'],
+                    'district': result['institute_data']['district']
+                },
+                'resultData': [],  # Will be populated from GPA records
+                'cgpaData': result.get('cgpaData', [])
+            }
+            
+            # Add semester results from GPA records
+            if result.get('gpa_records'):
+                for gpa_record in result['gpa_records']:
+                    semester_result = {
+                        'publishedAt': gpa_record.get('created_at', '2025-01-01T00:00:00Z'),
+                        'semester': str(gpa_record.get('semester', 1)),
+                        'result': gpa_record.get('gpa', '0.00'),
+                        'passed': not gpa_record.get('is_reference', False),
+                        'gpa': str(gpa_record.get('gpa', '0.00'))
+                    }
+                    transformed_data['resultData'].append(semester_result)
+            
+            return jsonify(transformed_data)
         else:
             # Try web API fallback
             print(f"🌐 Student not found in any Supabase project, trying web APIs...")
