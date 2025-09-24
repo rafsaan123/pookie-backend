@@ -33,12 +33,19 @@ Production-ready backend API for BTEB Results mobile application.
 3. Deploy automatically on push
 
 ### Environment Variables Required
+
+**For Vercel Deployment:**
+1. Go to Vercel Dashboard → Your Project → Settings → Environment Variables
+2. Add these variables:
+
 ```
 SUPABASE_PRIMARY_URL=https://hddphaneexloretrisiy.supabase.co
-SUPABASE_PRIMARY_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_PRIMARY_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhkZHBoYW5lZXhsb3JldHJpc2l5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MTEzNjksImV4cCI6MjA3NDE4NzM2OX0.eMyOCUDI-iqcGY_tJUbAMw41sPnDDXfHbdMJNfcwP-w
 SUPABASE_SECONDARY_URL=https://ncjleyktzilulflbjfdg.supabase.co
-SUPABASE_SECONDARY_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SECONDARY_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jamxleWt0emlsdWxmbGJqZmRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjI2OTUsImV4cCI6MjA3NDE5ODY5NX0.ScbXuVjULWWyCJt4IuKhUhSunkRg0H0XVVysR7756b0
 ```
+
+**Important:** After adding environment variables, redeploy the project for changes to take effect.
 
 ## Testing
 

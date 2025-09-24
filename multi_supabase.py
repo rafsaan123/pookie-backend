@@ -90,14 +90,31 @@ class MultiSupabaseManager:
                 with open(self.config_file, 'r') as f:
                     config_data = json.load(f)
                     
-                    # Load projects
+                    # Load projects with environment variable substitution
                     for project_name, project_config in config_data.get('projects', {}).items():
-                        self.projects[project_name] = SupabaseProject(
-                            name=project_name,
-                            url=project_config['url'],
-                            key=project_config['key'],
-                            description=project_config.get('description', '')
-                        )
+                        # Substitute environment variables in URL and key
+                        url = project_config['url']
+                        key = project_config['key']
+                        
+                        # Replace environment variable placeholders
+                        if url.startswith('${') and url.endswith('}'):
+                            env_var = url[2:-1]
+                            url = os.getenv(env_var, url)
+                        
+                        if key.startswith('${') and key.endswith('}'):
+                            env_var = key[2:-1]
+                            key = os.getenv(env_var, key)
+                        
+                        # Only add project if we have valid URL and key
+                        if url and key and not url.startswith('${') and not key.startswith('${'):
+                            self.projects[project_name] = SupabaseProject(
+                                name=project_name,
+                                url=url,
+                                key=key,
+                                description=project_config.get('description', '')
+                            )
+                        else:
+                            print(f"⚠️ Skipping {project_name}: Missing environment variables")
                     
                     # Load search order
                     self.search_order = config_data.get('search_order', list(self.projects.keys()))
