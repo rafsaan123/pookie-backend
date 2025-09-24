@@ -206,7 +206,11 @@ def search_result():
             if cgpa_data:
                 result['cgpaData'] = cgpa_data
             
-            return jsonify(result)
+            # Return consistent format with success field
+            return jsonify({
+                'success': True,
+                'data': result
+            })
         else:
             # Try web API fallback
             print(f"🌐 Student not found in any Supabase project, trying web APIs...")
