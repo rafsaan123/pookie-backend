@@ -6,13 +6,13 @@
   ],
   "projects": {
     "primary": {
-      "url": "${SUPABASE_PRIMARY_URL}",
-      "key": "${SUPABASE_PRIMARY_KEY}",
+      "url": "https://hddphaneexloretrisiy.supabase.co",
+      "key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhkZHBoYW5lZXhsb3JldHJpc2l5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MTEzNjksImV4cCI6MjA3NDE4NzM2OX0.eMyOCUDI-iqcGY_tJUbAMw41sPnDDXfHbdMJNfcwP-w",
       "description": "Primary BTEB Results Database - Main production data"
     },
     "secondary": {
-      "url": "${SUPABASE_SECONDARY_URL}",
-      "key": "${SUPABASE_SECONDARY_KEY}",
+      "url": "https://ncjleyktzilulflbjfdg.supabase.co",
+      "key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jamxleWt0emlsdWxmbGJqZmRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjI2OTUsImV4cCI6MjA3NDE5ODY5NX0.ScbXuVjULWWyCJt4IuKhUhSunkRg0H0XVVysR7756b0",
       "description": "Secondary BTEB Results Database"
     }
   },
