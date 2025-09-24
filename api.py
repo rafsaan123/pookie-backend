@@ -206,20 +206,26 @@ def search_result():
             if cgpa_data:
                 result['cgpaData'] = cgpa_data
             
-            # Get GPA records from Supabase (separate query) - use the same project where student was found
+            # Get GPA records - check if they come from web API fallback or need to fetch from Supabase
             gpa_records = []
-            try:
-                # Switch to the project where the student was found
-                found_project = result.get('project_name', 'primary')
-                supabase_manager.switch_project(found_project)
-                supabase = get_supabase_client()
-                
-                gpa_result = supabase.table('gpa_records').select('*').eq('roll_number', roll_no).order('semester').execute()
-                gpa_records = gpa_result.data if gpa_result.data else []
-                print(f"📊 Found {len(gpa_records)} GPA records in {found_project}")
-            except Exception as e:
-                print(f"❌ Error fetching GPA records: {e}")
-                gpa_records = []
+            if result.get('source', '').startswith('web_api'):
+                # GPA records come from web API fallback
+                gpa_records = result.get('gpa_records', [])
+                print(f"📊 Using {len(gpa_records)} GPA records from web API fallback")
+            else:
+                # Fetch GPA records from Supabase (separate query) - use the same project where student was found
+                try:
+                    # Switch to the project where the student was found
+                    found_project = result.get('project_name', 'primary')
+                    supabase_manager.switch_project(found_project)
+                    supabase = get_supabase_client()
+                    
+                    gpa_result = supabase.table('gpa_records').select('*').eq('roll_number', roll_no).order('semester').execute()
+                    gpa_records = gpa_result.data if gpa_result.data else []
+                    print(f"📊 Found {len(gpa_records)} GPA records in {found_project}")
+                except Exception as e:
+                    print(f"❌ Error fetching GPA records: {e}")
+                    gpa_records = []
             
             # Transform the data to match mobile app expectations
             transformed_data = {
