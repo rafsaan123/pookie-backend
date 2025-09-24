@@ -206,6 +206,17 @@ def search_result():
             if cgpa_data:
                 result['cgpaData'] = cgpa_data
             
+            # Get GPA records from Supabase (separate query)
+            gpa_records = []
+            try:
+                supabase = get_supabase_client()
+                gpa_result = supabase.table('gpa_records').select('*').eq('roll_number', roll_no).order('semester').execute()
+                gpa_records = gpa_result.data if gpa_result.data else []
+                print(f"📊 Found {len(gpa_records)} GPA records")
+            except Exception as e:
+                print(f"❌ Error fetching GPA records: {e}")
+                gpa_records = []
+            
             # Transform the data to match mobile app expectations
             transformed_data = {
                 'success': True,
@@ -222,8 +233,8 @@ def search_result():
             }
             
             # Add semester results from GPA records
-            if result.get('gpa_records'):
-                for gpa_record in result['gpa_records']:
+            if gpa_records:
+                for gpa_record in gpa_records:
                     semester_result = {
                         'publishedAt': gpa_record.get('created_at', '2025-01-01T00:00:00Z'),
                         'semester': str(gpa_record.get('semester', 1)),
