@@ -226,7 +226,7 @@ def search_result():
                         
                         # Try web API fallback
                         web_result = search_student_in_web_apis(roll_no, regulation, program)
-                        if web_result and web_result.get('success'):
+                        if web_result and web_result.get('student_data'):
                             print(f"✅ Found complete data in web API fallback")
                             result = web_result
                         else:
@@ -304,8 +304,42 @@ def search_result():
             print(f"🌐 Student not found in any Supabase project, trying web APIs...")
             web_result = search_student_in_web_apis(roll_no, regulation, program)
             
-            if web_result and web_result.get('success'):
-                return jsonify(web_result)
+            if web_result and web_result.get('student_data'):
+                # Transform web API result to match expected format
+                transformed_data = {
+                    'success': True,
+                    'time': web_result['student_data'].get('created_at', '2025-01-01T00:00:00Z'),
+                    'roll': roll_no,
+                    'regulation': regulation,
+                    'exam': program,
+                    'found_in_project': web_result.get('source', 'web_api'),
+                    'projects_searched': supabase_manager.get_search_order() + ['web_apis'],
+                    'source': 'web_api',
+                    'instituteData': {
+                        'code': web_result['institute_data'].get('code', '00000'),
+                        'name': web_result['institute_data'].get('name', 'Unknown'),
+                        'district': web_result['institute_data'].get('district', 'Unknown')
+                    },
+                    'resultData': [],
+                    'cgpaData': []
+                }
+                
+                # Process GPA records from web API
+                gpa_records = web_result.get('gpa_records', [])
+                for gpa_record in gpa_records:
+                    semester_result = {
+                        'publishedAt': gpa_record.get('created_at', '2025-01-01T00:00:00Z'),
+                        'semester': str(gpa_record.get('semester', '1')),
+                        'passed': not gpa_record.get('is_reference', False),
+                        'gpa': str(gpa_record.get('gpa', 'ref')) if gpa_record.get('gpa') is not None else "ref",
+                        'result': {
+                            'gpa': str(gpa_record.get('gpa', 'ref')) if gpa_record.get('gpa') is not None else "ref",
+                            'ref_subjects': gpa_record.get('ref_subjects', []) if gpa_record.get('ref_subjects') else []
+                        }
+                    }
+                    transformed_data['resultData'].append(semester_result)
+                
+                return jsonify(transformed_data)
             else:
                 return jsonify({
                     'success': False,
